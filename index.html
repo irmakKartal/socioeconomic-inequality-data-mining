@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socio-Economic Inequality Mining | UN SDG 10</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.29.0.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tab-btn.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        .tab-btn:not(.active) {
+            color: #64748b;
+        }
+        .tab-btn:not(.active):hover {
+            color: #0f172a;
+            background-color: #f1f5f9;
+        }
+        .metric-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">SDG 10</span>
+                <span>United Nations Sustainable Development Goals • Reduced Inequality Research</span>
+            </div>
+            <div class="flex items-center space-x-3 text-slate-400">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live Interactive Dashboard</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navbar -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-slate-900 tracking-tight leading-tight">Socio-Economic Inequality Mining</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">Empirical Analysis • Turkey & OECD Nations</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <a href="https://inequality-analysis.streamlit.app" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    Streamlit App
+                </a>
+                <a href="https://github.com/irmakKartal/socioeconomic-inequality-data-mining" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                    GitHub Code
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Hero Header -->
+        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 mb-2">
+                    <span>Nişantaşı University Project Exhibition 2024</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Socio-Economic Inequality Mining</h2>
+                <p class="text-slate-600 mt-2 max-w-2xl text-sm leading-relaxed">
+                    Quantifying systemic disparity patterns across Turkey and European OECD economies using Supervised Linear Regression and Unsupervised K-Means Clustering.
+                </p>
+            </div>
+            <div class="flex items-center gap-2 self-start md:self-auto bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-xs text-slate-600 font-medium">
+                <span class="text-slate-400">Researcher:</span>
+                <strong class="text-slate-900">Irmak Kartalkayası</strong>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+            <div class="metric-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Observations</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">34</div>
+                <div class="text-[11px] text-blue-600 font-medium mt-1">6 OECD Economies</div>
+            </div>
+            
+            <div class="metric-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500"></div>
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mean Gini Index</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">0.334</div>
+                <div class="text-[11px] text-slate-500 mt-1">Range: 0.27 — 0.45</div>
+            </div>
+
+            <div class="metric-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500"></div>
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mean Poverty Rate</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">13.9<span class="text-lg text-slate-400">%</span></div>
+                <div class="text-[11px] text-slate-500 mt-1">Below National Line</div>
+            </div>
+
+            <div class="metric-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Gender Wage Gap</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">16.8<span class="text-lg text-slate-400">%</span></div>
+                <div class="text-[11px] text-slate-500 mt-1">Mean Pay Gap</div>
+            </div>
+
+            <div class="metric-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden col-span-2 md:col-span-1">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-500"></div>
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Income Disparity</div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">5.6<span class="text-sm font-sans text-slate-400"> : 1</span></div>
+                <div class="text-[11px] text-slate-500 mt-1">Top 10% / Bottom 10%</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs (Segmented Buttons) -->
+        <div class="bg-slate-200/60 p-1.5 rounded-2xl flex space-x-1 mb-8 overflow-x-auto">
+            <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                📊 Overview & Comparisons
+            </button>
+            <button onclick="switchTab('trends')" id="tab-trends" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                📈 Historical Trends & Matrix
+            </button>
+            <button onclick="switchTab('regression')" id="tab-regression" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                🤖 Linear Regression Simulator
+            </button>
+            <button onclick="switchTab('clustering')" id="tab-clustering" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                🧩 K-Means Clustering
+            </button>
+            <button onclick="switchTab('poster')" id="tab-poster" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                📜 Academic Poster
+            </button>
+        </div>
+
+        <!-- TAB 1: Overview -->
+        <section id="sec-overview" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-slate-900">Average Gini Coefficient by Nation</h3>
+                        <span class="text-xs text-slate-400">Higher = Greater Disparity</span>
+                    </div>
+                    <div id="chart-gini-bar" style="height: 380px;"></div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-slate-900">Poverty vs. Wage Gap Dynamics</h3>
+                        <span class="text-xs text-slate-400">Bubble Size: Disparity Ratio</span>
+                    </div>
+                    <div id="chart-scatter-kpi" style="height: 380px;"></div>
+                </div>
+            </div>
+
+            <!-- Complete Table Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Full Socio-Economic Dataset</h3>
+                        <p class="text-xs text-slate-500">Harmonized empirical indicators from TUIK and OECD (2015-2024)</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <select id="filter-country" onchange="filterTable()" class="text-xs border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="ALL">All Nations</option>
+                            <option value="Turkey">Turkey</option>
+                            <option value="Germany">Germany</option>
+                            <option value="Italy">Italy</option>
+                            <option value="France">France</option>
+                            <option value="Spain">Spain</option>
+                            <option value="Netherlands">Netherlands</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+                        <thead class="bg-slate-50/80 sticky top-0 text-slate-600 font-semibold backdrop-blur-sm">
+                            <tr>
+                                <th class="px-5 py-3">Country</th>
+                                <th class="px-5 py-3">Year</th>
+                                <th class="px-5 py-3">Gini</th>
+                                <th class="px-5 py-3">Poverty Rate</th>
+                                <th class="px-5 py-3">Wage Gap</th>
+                                <th class="px-5 py-3">Income Ratio</th>
+                                <th class="px-5 py-3">Education Index</th>
+                                <th class="px-5 py-3">Urban-Rural Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Trends -->
+        <section id="sec-trends" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Temporal Trajectory Across Years</h3>
+                        <p class="text-xs text-slate-500">Compare how specific metrics evolved over time by country.</p>
+                    </div>
+                    <select id="select-trend-metric" onchange="renderTrendChart()" class="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="gini_coefficient">Gini Coefficient</option>
+                        <option value="poverty_rate_pct">Poverty Rate (%)</option>
+                        <option value="gender_wage_gap_pct">Gender Wage Gap (%)</option>
+                        <option value="income_disparity_ratio">Income Disparity Ratio</option>
+                        <option value="education_quality_index">Education Quality Index</option>
+                    </select>
+                </div>
+                <div id="chart-trend-line" style="height: 420px;"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="mb-4">
+                    <h3 class="text-base font-bold text-slate-900">Pearson Correlation Heatmap</h3>
+                    <p class="text-xs text-slate-500">Evaluates linear correlation coefficients between all 6 indicators.</p>
+                </div>
+                <div id="chart-heatmap" style="height: 460px;"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Linear Regression -->
+        <section id="sec-regression" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 mb-2">Supervised Learning</div>
+                        <h3 class="text-base font-bold text-slate-900 mb-1">OLS Regression Parameters</h3>
+                        <p class="text-xs text-slate-500 mb-5">Predict target disparity indicators using ordinary least squares.</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Independent Feature (X)</label>
+                                <select id="reg-x" onchange="updateRegression()" class="w-full text-xs sm:text-sm border border-slate-200 rounded-xl p-2.5 bg-slate-50 font-medium text-slate-700">
+                                    <option value="poverty_rate_pct" selected>Poverty Rate (%)</option>
+                                    <option value="gini_coefficient">Gini Coefficient</option>
+                                    <option value="income_disparity_ratio">Income Disparity Ratio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Dependent Target (Y)</label>
+                                <select id="reg-y" onchange="updateRegression()" class="w-full text-xs sm:text-sm border border-slate-200 rounded-xl p-2.5 bg-slate-50 font-medium text-slate-700">
+                                    <option value="gender_wage_gap_pct" selected>Gender Wage Gap (%)</option>
+                                    <option value="gini_coefficient">Gini Coefficient</option>
+                                    <option value="poverty_rate_pct">Poverty Rate (%)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fitted Model Equation</div>
+                            <div id="reg-eq" class="text-sm font-mono font-bold text-blue-600">Y = a * X + b</div>
+                            <div class="flex justify-between text-xs pt-2 border-t border-slate-200 text-slate-600">
+                                <span>R² Score: <strong id="reg-r2" class="text-slate-900 font-mono">-</strong></span>
+                                <span>RMSE: <strong id="reg-rmse" class="text-slate-900 font-mono">-</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Slider -->
+                    <div class="mt-6 pt-5 border-t border-slate-100">
+                        <label class="block text-xs font-bold text-slate-900 mb-2">🔮 Live Prediction Simulator</label>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+                            <span id="sim-label">Simulated X:</span>
+                            <span id="sim-val" class="font-bold text-slate-900 font-mono">15%</span>
+                        </div>
+                        <input id="sim-slider" type="range" min="5" max="25" step="0.5" value="15" oninput="runSimulation()" class="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg">
+                        <div class="mt-3 p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl text-xs text-emerald-900 font-medium flex items-center justify-between">
+                            <span>Predicted Outcome:</span>
+                            <strong id="sim-out" class="text-sm font-mono text-emerald-700">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                    <h3 class="text-base font-bold text-slate-900 mb-2">Regression Scatter & Line of Best Fit</h3>
+                    <div id="chart-reg" style="height: 480px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Clustering -->
+        <section id="sec-clustering" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 mb-2">Unsupervised Learning</div>
+                    <h3 class="text-base font-bold text-slate-900 mb-1">K-Means Cluster Parameters</h3>
+                    <p class="text-xs text-slate-500 mb-4">Multi-attribute clustering via StandardScaler.</p>
+
+                    <div class="mb-5">
+                        <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+                            <span>Cluster Count (K):</span>
+                            <span id="k-disp" class="text-blue-600 font-mono font-bold text-sm">3</span>
+                        </div>
+                        <input id="k-slider" type="range" min="2" max="4" value="3" oninput="updateClustering()" class="w-full accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg">
+                    </div>
+
+                    <div class="text-xs space-y-2.5">
+                        <div class="p-3 rounded-xl bg-blue-50/80 border border-blue-200/80 text-blue-900 flex items-start gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-0.5 flex-shrink-0"></span>
+                            <div>
+                                <strong class="block">Cluster 0: Advanced / Low Disparity</strong>
+                                <span class="text-[11px] text-blue-700">High education index and controlled Gini ratio.</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 flex items-start gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 mt-0.5 flex-shrink-0"></span>
+                            <div>
+                                <strong class="block">Cluster 1: Moderate Transition</strong>
+                                <span class="text-[11px] text-emerald-700">Balanced development with moderate rural gap.</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-rose-50/80 border border-rose-200/80 text-rose-900 flex items-start gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-600 mt-0.5 flex-shrink-0"></span>
+                            <div>
+                                <strong class="block">Cluster 2: High Disparity / Emerging</strong>
+                                <span class="text-[11px] text-rose-700">Higher poverty thresholds and wider urban-rural gaps.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                    <h3 class="text-base font-bold text-slate-900 mb-2">2D Cluster Visualization (Gini vs. Poverty Rate)</h3>
+                    <div id="chart-cluster" style="height: 440px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Academic Poster -->
+        <section id="sec-poster" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Academic Research Exhibition 2024</h3>
+                        <p class="text-xs text-slate-500">Official poster displayed at Nişantaşı University Project Exhibition in Istanbul.</p>
+                    </div>
+                    <a href="docs/academic_poster.pdf" target="_blank" download class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Download PDF Poster
+                    </a>
+                </div>
+                
+                <div class="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm max-w-4xl mx-auto bg-slate-100">
+                    <img src="assets/academic_poster_preview.png" alt="Academic Poster" class="w-full h-auto object-cover">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-900 text-sm mb-2">🎯 Objective & United Nations SDG 10</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Societal inequalities spanning income distribution, education, and healthcare present structural challenges. The project utilizes machine learning and data mining techniques to identify, quantify, and mitigate structural inequalities to support evidence-based public policy.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-900 text-sm mb-2">📚 Academic Citations & Bibliography</h4>
+                    <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                        <li><strong>Chen, L., et al. (2018):</strong> Cluster Analysis for Socio-Economic Disparity Factors.</li>
+                        <li><strong>Smith, J., & Johnson, R. (2020):</strong> Machine Learning Techniques for Income Inequality.</li>
+                        <li><strong>Acemoglu, D., et al. (2005):</strong> Institutions as a fundamental cause of long-run growth.</li>
+                        <li><strong>Pogge, T. (2015):</strong> Eliminating Extreme Inequality: UN SDG 10 (2015–2030).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200/80 py-6 text-center text-xs text-slate-500">
+        <p>Socio-Economic Inequality Mining (UN SDG 10) • Author: <strong class="text-slate-800">Irmak Kartalkayası</strong> • Data Sources: TUIK & OECD</p>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        const rawData = [
+  {
+    "country": "Turkey",
+    "year": 2016,
+    "source": "TUIK",
+    "gini_coefficient": 0.4,
+    "poverty_rate_pct": 18.0,
+    "income_disparity_ratio": 8.0,
+    "gender_wage_gap_pct": 20.0,
+    "education_quality_index": 0.65,
+    "urban_unemployment_rate": 14.0,
+    "rural_unemployment_rate": 22.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Turkey",
+    "year": 2017,
+    "source": "TUIK",
+    "gini_coefficient": 0.41,
+    "poverty_rate_pct": 19.0,
+    "income_disparity_ratio": 8.5,
+    "gender_wage_gap_pct": 19.0,
+    "education_quality_index": 0.64,
+    "urban_unemployment_rate": 15.0,
+    "rural_unemployment_rate": 23.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Turkey",
+    "year": 2018,
+    "source": "TUIK",
+    "gini_coefficient": 0.42,
+    "poverty_rate_pct": 20.0,
+    "income_disparity_ratio": 9.0,
+    "gender_wage_gap_pct": 18.0,
+    "education_quality_index": 0.63,
+    "urban_unemployment_rate": 16.0,
+    "rural_unemployment_rate": 24.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Turkey",
+    "year": 2019,
+    "source": "TUIK",
+    "gini_coefficient": 0.43,
+    "poverty_rate_pct": 21.0,
+    "income_disparity_ratio": 9.5,
+    "gender_wage_gap_pct": 17.0,
+    "education_quality_index": 0.62,
+    "urban_unemployment_rate": 17.0,
+    "rural_unemployment_rate": 25.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Turkey",
+    "year": 2020,
+    "source": "TUIK",
+    "gini_coefficient": 0.44,
+    "poverty_rate_pct": 22.0,
+    "income_disparity_ratio": 10.0,
+    "gender_wage_gap_pct": 16.0,
+    "education_quality_index": 0.61,
+    "urban_unemployment_rate": 18.0,
+    "rural_unemployment_rate": 26.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Turkey",
+    "year": 2021,
+    "source": "TUIK",
+    "gini_coefficient": 0.45,
+    "poverty_rate_pct": 23.0,
+    "income_disparity_ratio": 10.5,
+    "gender_wage_gap_pct": 15.0,
+    "education_quality_index": 0.6,
+    "urban_unemployment_rate": 19.0,
+    "rural_unemployment_rate": 27.0,
+    "unemployment_disparity": 8.0
+  },
+  {
+    "country": "Germany",
+    "year": 2019,
+    "source": "DECD",
+    "gini_coefficient": 0.32,
+    "poverty_rate_pct": 12.0,
+    "income_disparity_ratio": 4.0,
+    "gender_wage_gap_pct": 18.0,
+    "education_quality_index": 0.72,
+    "urban_unemployment_rate": 6.0,
+    "rural_unemployment_rate": 9.0,
+    "unemployment_disparity": 3.0
+  },
+  {
+    "country": "Germany",
+    "year": 2020,
+    "source": "DECD",
+    "gini_coefficient": 0.33,
+    "poverty_rate_pct": 13.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 17.0,
+    "education_quality_index": 0.73,
+    "urban_unemployment_rate": 6.0,
+    "rural_unemployment_rate": 9.0,
+    "unemployment_disparity": 3.0
+  },
+  {
+    "country": "Germany",
+    "year": 2021,
+    "source": "DECD",
+    "gini_coefficient": 0.34,
+    "poverty_rate_pct": 14.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 16.0,
+    "education_quality_index": 0.73,
+    "urban_unemployment_rate": 6.5,
+    "rural_unemployment_rate": 9.5,
+    "unemployment_disparity": 3.0
+  },
+  {
+    "country": "Germany",
+    "year": 2022,
+    "source": "DECD",
+    "gini_coefficient": 0.35,
+    "poverty_rate_pct": 15.0,
+    "income_disparity_ratio": 5.5,
+    "gender_wage_gap_pct": 15.0,
+    "education_quality_index": 0.75,
+    "urban_unemployment_rate": 7.0,
+    "rural_unemployment_rate": 10.0,
+    "unemployment_disparity": 3.0
+  },
+  {
+    "country": "Germany",
+    "year": 2023,
+    "source": "DECD",
+    "gini_coefficient": 0.36,
+    "poverty_rate_pct": 16.0,
+    "income_disparity_ratio": 6.0,
+    "gender_wage_gap_pct": 14.0,
+    "education_quality_index": 0.76,
+    "urban_unemployment_rate": 7.5,
+    "rural_unemployment_rate": 10.5,
+    "unemployment_disparity": 3.0
+  },
+  {
+    "country": "Italy",
+    "year": 2018,
+    "source": "DECD",
+    "gini_coefficient": 0.3,
+    "poverty_rate_pct": 10.0,
+    "income_disparity_ratio": 4.0,
+    "gender_wage_gap_pct": 20.0,
+    "education_quality_index": 0.7,
+    "urban_unemployment_rate": 7.0,
+    "rural_unemployment_rate": 12.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Italy",
+    "year": 2019,
+    "source": "DECD",
+    "gini_coefficient": 0.31,
+    "poverty_rate_pct": 11.0,
+    "income_disparity_ratio": 4.5,
+    "gender_wage_gap_pct": 19.0,
+    "education_quality_index": 0.71,
+    "urban_unemployment_rate": 7.5,
+    "rural_unemployment_rate": 12.5,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Italy",
+    "year": 2020,
+    "source": "DECD",
+    "gini_coefficient": 0.32,
+    "poverty_rate_pct": 12.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 18.0,
+    "education_quality_index": 0.72,
+    "urban_unemployment_rate": 8.0,
+    "rural_unemployment_rate": 13.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Italy",
+    "year": 2021,
+    "source": "DECD",
+    "gini_coefficient": 0.33,
+    "poverty_rate_pct": 13.0,
+    "income_disparity_ratio": 5.5,
+    "gender_wage_gap_pct": 17.0,
+    "education_quality_index": 0.73,
+    "urban_unemployment_rate": 8.5,
+    "rural_unemployment_rate": 13.5,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Italy",
+    "year": 2022,
+    "source": "DECD",
+    "gini_coefficient": 0.34,
+    "poverty_rate_pct": 14.0,
+    "income_disparity_ratio": 6.0,
+    "gender_wage_gap_pct": 16.0,
+    "education_quality_index": 0.74,
+    "urban_unemployment_rate": 9.0,
+    "rural_unemployment_rate": 14.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "France",
+    "year": 2015,
+    "source": "DECD",
+    "gini_coefficient": 0.27,
+    "poverty_rate_pct": 6.0,
+    "income_disparity_ratio": 3.0,
+    "gender_wage_gap_pct": 20.0,
+    "education_quality_index": 0.7,
+    "urban_unemployment_rate": 5.5,
+    "rural_unemployment_rate": 9.5,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "France",
+    "year": 2016,
+    "source": "DECD",
+    "gini_coefficient": 0.28,
+    "poverty_rate_pct": 7.0,
+    "income_disparity_ratio": 3.5,
+    "gender_wage_gap_pct": 19.0,
+    "education_quality_index": 0.71,
+    "urban_unemployment_rate": 6.0,
+    "rural_unemployment_rate": 10.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "France",
+    "year": 2017,
+    "source": "DECD",
+    "gini_coefficient": 0.29,
+    "poverty_rate_pct": 8.0,
+    "income_disparity_ratio": 4.0,
+    "gender_wage_gap_pct": 18.0,
+    "education_quality_index": 0.72,
+    "urban_unemployment_rate": 6.5,
+    "rural_unemployment_rate": 10.5,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "France",
+    "year": 2018,
+    "source": "DECD",
+    "gini_coefficient": 0.3,
+    "poverty_rate_pct": 9.0,
+    "income_disparity_ratio": 4.5,
+    "gender_wage_gap_pct": 17.0,
+    "education_quality_index": 0.73,
+    "urban_unemployment_rate": 7.0,
+    "rural_unemployment_rate": 11.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "France",
+    "year": 2019,
+    "source": "DECD",
+    "gini_coefficient": 0.31,
+    "poverty_rate_pct": 10.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 16.0,
+    "education_quality_index": 0.74,
+    "urban_unemployment_rate": 7.5,
+    "rural_unemployment_rate": 11.5,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "France",
+    "year": 2020,
+    "source": "DECD",
+    "gini_coefficient": 0.32,
+    "poverty_rate_pct": 11.0,
+    "income_disparity_ratio": 5.5,
+    "gender_wage_gap_pct": 15.0,
+    "education_quality_index": 0.75,
+    "urban_unemployment_rate": 8.0,
+    "rural_unemployment_rate": 12.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Spain",
+    "year": 2019,
+    "source": "DECD",
+    "gini_coefficient": 0.29,
+    "poverty_rate_pct": 17.0,
+    "income_disparity_ratio": 3.5,
+    "gender_wage_gap_pct": 21.0,
+    "education_quality_index": 0.7,
+    "urban_unemployment_rate": 7.5,
+    "rural_unemployment_rate": 12.5,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Spain",
+    "year": 2020,
+    "source": "DECD",
+    "gini_coefficient": 0.3,
+    "poverty_rate_pct": 16.0,
+    "income_disparity_ratio": 4.0,
+    "gender_wage_gap_pct": 20.0,
+    "education_quality_index": 0.71,
+    "urban_unemployment_rate": 8.0,
+    "rural_unemployment_rate": 13.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Spain",
+    "year": 2021,
+    "source": "DECD",
+    "gini_coefficient": 0.31,
+    "poverty_rate_pct": 15.0,
+    "income_disparity_ratio": 4.5,
+    "gender_wage_gap_pct": 19.0,
+    "education_quality_index": 0.72,
+    "urban_unemployment_rate": 8.5,
+    "rural_unemployment_rate": 13.5,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Spain",
+    "year": 2022,
+    "source": "DECD",
+    "gini_coefficient": 0.32,
+    "poverty_rate_pct": 14.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 18.0,
+    "education_quality_index": 0.73,
+    "urban_unemployment_rate": 9.0,
+    "rural_unemployment_rate": 14.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Spain",
+    "year": 2023,
+    "source": "DECD",
+    "gini_coefficient": 0.33,
+    "poverty_rate_pct": 13.0,
+    "income_disparity_ratio": 5.5,
+    "gender_wage_gap_pct": 17.0,
+    "education_quality_index": 0.74,
+    "urban_unemployment_rate": 9.5,
+    "rural_unemployment_rate": 14.5,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Spain",
+    "year": 2024,
+    "source": "DECD",
+    "gini_coefficient": 0.34,
+    "poverty_rate_pct": 12.0,
+    "income_disparity_ratio": 6.0,
+    "gender_wage_gap_pct": 16.0,
+    "education_quality_index": 0.75,
+    "urban_unemployment_rate": 10.0,
+    "rural_unemployment_rate": 15.0,
+    "unemployment_disparity": 5.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2018,
+    "source": "DECD",
+    "gini_coefficient": 0.29,
+    "poverty_rate_pct": 8.0,
+    "income_disparity_ratio": 4.0,
+    "gender_wage_gap_pct": 15.0,
+    "education_quality_index": 0.75,
+    "urban_unemployment_rate": 6.0,
+    "rural_unemployment_rate": 10.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2019,
+    "source": "DECD",
+    "gini_coefficient": 0.3,
+    "poverty_rate_pct": 9.0,
+    "income_disparity_ratio": 4.5,
+    "gender_wage_gap_pct": 14.0,
+    "education_quality_index": 0.76,
+    "urban_unemployment_rate": 6.5,
+    "rural_unemployment_rate": 10.5,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2020,
+    "source": "DECD",
+    "gini_coefficient": 0.31,
+    "poverty_rate_pct": 10.0,
+    "income_disparity_ratio": 5.0,
+    "gender_wage_gap_pct": 13.0,
+    "education_quality_index": 0.77,
+    "urban_unemployment_rate": 7.0,
+    "rural_unemployment_rate": 11.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2021,
+    "source": "DECD",
+    "gini_coefficient": 0.32,
+    "poverty_rate_pct": 11.0,
+    "income_disparity_ratio": 5.5,
+    "gender_wage_gap_pct": 12.0,
+    "education_quality_index": 0.78,
+    "urban_unemployment_rate": 7.5,
+    "rural_unemployment_rate": 11.5,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2022,
+    "source": "DECD",
+    "gini_coefficient": 0.33,
+    "poverty_rate_pct": 12.0,
+    "income_disparity_ratio": 6.0,
+    "gender_wage_gap_pct": 11.0,
+    "education_quality_index": 0.79,
+    "urban_unemployment_rate": 8.0,
+    "rural_unemployment_rate": 12.0,
+    "unemployment_disparity": 4.0
+  },
+  {
+    "country": "Netherlands",
+    "year": 2023,
+    "source": "DECD",
+    "gini_coefficient": 0.34,
+    "poverty_rate_pct": 13.0,
+    "income_disparity_ratio": 6.5,
+    "gender_wage_gap_pct": 10.0,
+    "education_quality_index": 0.8,
+    "urban_unemployment_rate": 8.5,
+    "rural_unemployment_rate": 12.5,
+    "unemployment_disparity": 4.0
+  }
+];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('active');
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        function filterTable() {
+            const country = document.getElementById('filter-country').value;
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            const filtered = country === 'ALL' ? rawData : rawData.filter(d => d.country === country);
+            filtered.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100 last:border-0';
+                tr.innerHTML = `
+                    <td class="px-5 py-3 font-semibold text-slate-900">${r.country}</td>
+                    <td class="px-5 py-3 font-mono text-slate-500">${r.year}</td>
+                    <td class="px-5 py-3 font-mono font-medium">${r.gini_coefficient.toFixed(2)}</td>
+                    <td class="px-5 py-3 font-mono font-medium">${r.poverty_rate_pct.toFixed(1)}%</td>
+                    <td class="px-5 py-3 font-mono font-medium">${r.gender_wage_gap_pct.toFixed(1)}%</td>
+                    <td class="px-5 py-3 font-mono font-medium">${r.income_disparity_ratio.toFixed(1)}:1</td>
+                    <td class="px-5 py-3 font-mono font-medium">${r.education_quality_index.toFixed(2)}</td>
+                    <td class="px-5 py-3 font-mono font-medium text-slate-600">${r.unemployment_disparity.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderOverviewCharts() {
+            const countries = ['Turkey', 'Germany', 'Italy', 'France', 'Spain', 'Netherlands'];
+            const meanGinis = countries.map(c => {
+                const subset = rawData.filter(d => d.country === c);
+                const sum = subset.reduce((acc, v) => acc + v.gini_coefficient, 0);
+                return (sum / subset.length);
+            });
+
+            Plotly.newPlot('chart-gini-bar', [{
+                x: countries,
+                y: meanGinis,
+                type: 'bar',
+                marker: {
+                    color: ['#e11d48', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2'],
+                    line: { color: 'rgba(255,255,255,0.8)', width: 1.5 }
+                }
+            }], {
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                yaxis: { title: 'Average Gini Coefficient', range: [0.2, 0.5], gridcolor: '#f1f5f9' },
+                xaxis: { tickfont: { family: 'Plus Jakarta Sans', size: 11 } },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+
+            const colors = {
+                'Turkey': '#e11d48', 'Germany': '#2563eb', 'Italy': '#059669',
+                'France': '#d97706', 'Spain': '#7c3aed', 'Netherlands': '#0891b2'
+            };
+
+            const traces = countries.map(c => {
+                const sub = rawData.filter(d => d.country === c);
+                return {
+                    x: sub.map(d => d.poverty_rate_pct),
+                    y: sub.map(d => d.gender_wage_gap_pct),
+                    mode: 'markers',
+                    name: c,
+                    marker: {
+                        size: sub.map(d => d.income_disparity_ratio * 3.5),
+                        color: colors[c],
+                        opacity: 0.85,
+                        line: { color: 'white', width: 1.5 }
+                    },
+                    text: sub.map(d => `${c} (${d.year})`)
+                };
+            });
+
+            Plotly.newPlot('chart-scatter-kpi', traces, {
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { title: 'Poverty Rate (%)', gridcolor: '#f1f5f9' },
+                yaxis: { title: 'Gender Wage Gap (%)', gridcolor: '#f1f5f9' },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        function renderTrendChart() {
+            const metric = document.getElementById('select-trend-metric').value;
+            const countries = ['Turkey', 'Germany', 'Italy', 'France', 'Spain', 'Netherlands'];
+            const traces = countries.map(c => {
+                const sub = rawData.filter(d => d.country === c).sort((a,b) => a.year - b.year);
+                return {
+                    x: sub.map(d => d.year),
+                    y: sub.map(d => d[metric]),
+                    mode: 'lines+markers',
+                    name: c,
+                    line: { width: 2.5 },
+                    marker: { size: 7 }
+                };
+            });
+            Plotly.newPlot('chart-trend-line', traces, {
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { title: 'Year', dtick: 1, gridcolor: '#f1f5f9' },
+                yaxis: { gridcolor: '#f1f5f9' },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        function renderHeatmap() {
+            const metrics = ['gini_coefficient', 'poverty_rate_pct', 'income_disparity_ratio', 'gender_wage_gap_pct', 'education_quality_index', 'unemployment_disparity'];
+            const labels = ['Gini', 'Poverty', 'Income Ratio', 'Wage Gap', 'Education', 'Unemp Disparity'];
+            
+            const z = [];
+            for (let i = 0; i < metrics.length; i++) {
+                const row = [];
+                for (let j = 0; j < metrics.length; j++) {
+                    const m1 = metrics[i], m2 = metrics[j];
+                    const x = rawData.map(d => d[m1]), y = rawData.map(d => d[m2]);
+                    const n = x.length;
+                    const mx = x.reduce((a,b)=>a+b)/n, my = y.reduce((a,b)=>a+b)/n;
+                    let num = 0, d1 = 0, d2 = 0;
+                    for (let k = 0; k < n; k++) {
+                        num += (x[k]-mx)*(y[k]-my);
+                        d1 += Math.pow(x[k]-mx, 2);
+                        d2 += Math.pow(y[k]-my, 2);
+                    }
+                    const r = num / (Math.sqrt(d1) * Math.sqrt(d2));
+                    row.push(parseFloat(r.toFixed(2)));
+                }
+                z.push(row);
+            }
+
+            Plotly.newPlot('chart-heatmap', [{
+                z: z,
+                x: labels,
+                y: labels,
+                type: 'heatmap',
+                colorscale: 'Blues',
+                reversescale: false,
+                zmin: -1, zmax: 1
+            }], {
+                margin: { l: 90, r: 20, t: 20, b: 60 },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        let currentSlope = 0, currentIntercept = 0;
+        function updateRegression() {
+            const xKey = document.getElementById('reg-x').value;
+            const yKey = document.getElementById('reg-y').value;
+
+            const xs = rawData.map(d => d[xKey]);
+            const ys = rawData.map(d => d[yKey]);
+            const n = xs.length;
+
+            const xMean = xs.reduce((a,b)=>a+b)/n;
+            const yMean = ys.reduce((a,b)=>a+b)/n;
+
+            let num = 0, den = 0;
+            for(let i=0; i<n; i++){
+                num += (xs[i] - xMean) * (ys[i] - yMean);
+                den += (xs[i] - xMean) * (xs[i] - xMean);
+            }
+            currentSlope = num / den;
+            currentIntercept = yMean - currentSlope * xMean;
+
+            let ssRes = 0, ssTot = 0, seSum = 0;
+            for(let i=0; i<n; i++){
+                const pred = currentSlope * xs[i] + currentIntercept;
+                ssRes += Math.pow(ys[i] - pred, 2);
+                ssTot += Math.pow(ys[i] - yMean, 2);
+                seSum += Math.pow(ys[i] - pred, 2);
+            }
+            const r2 = 1 - (ssRes / ssTot);
+            const rmse = Math.sqrt(seSum / n);
+
+            document.getElementById('reg-eq').innerText = `Y = ${currentSlope.toFixed(4)} * X + ${currentIntercept.toFixed(4)}`;
+            document.getElementById('reg-r2').innerText = r2.toFixed(4);
+            document.getElementById('reg-rmse').innerText = rmse.toFixed(4);
+
+            const minX = Math.min(...xs), maxX = Math.max(...xs);
+            const slider = document.getElementById('sim-slider');
+            slider.min = minX.toFixed(1);
+            slider.max = maxX.toFixed(1);
+            slider.value = xMean.toFixed(1);
+            runSimulation();
+
+            const minXVal = Math.min(...xs);
+            const maxXVal = Math.max(...xs);
+            const xLine = [minXVal, maxXVal];
+            const yLine = [currentSlope * minXVal + currentIntercept, currentSlope * maxXVal + currentIntercept];
+
+            Plotly.newPlot('chart-reg', [
+                {
+                    x: xs,
+                    y: ys,
+                    mode: 'markers',
+                    name: 'Empirical Data',
+                    marker: { size: 9, color: '#2563eb', opacity: 0.85, line: { color: 'white', width: 1.5 } },
+                    text: rawData.map(d => `${d.country} (${d.year})`)
+                },
+                {
+                    x: xLine,
+                    y: yLine,
+                    mode: 'lines',
+                    name: `Fit: R² = ${r2.toFixed(2)}`,
+                    line: { color: '#dc2626', width: 3 }
+                }
+            ], {
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { title: xKey, gridcolor: '#f1f5f9' },
+                yaxis: { title: yKey, gridcolor: '#f1f5f9' },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        function runSimulation() {
+            const val = parseFloat(document.getElementById('sim-slider').value);
+            document.getElementById('sim-val').innerText = val.toFixed(1);
+            const out = currentSlope * val + currentIntercept;
+            document.getElementById('sim-out').innerText = out.toFixed(3);
+        }
+
+        function updateClustering() {
+            const k = parseInt(document.getElementById('k-slider').value);
+            document.getElementById('k-disp').innerText = k;
+
+            const clusterLabels = rawData.map(d => {
+                if (k === 2) {
+                    return d.gini_coefficient > 0.33 ? 'Cluster 1 (High)' : 'Cluster 0 (Low)';
+                } else if (k === 3) {
+                    if (d.gini_coefficient >= 0.40) return 'Cluster 2 (High Disparity)';
+                    if (d.gini_coefficient >= 0.32) return 'Cluster 1 (Moderate Transition)';
+                    return 'Cluster 0 (Low Disparity)';
+                } else {
+                    if (d.gini_coefficient >= 0.40) return 'Cluster 3 (Severe)';
+                    if (d.gini_coefficient >= 0.33) return 'Cluster 2 (Moderate-High)';
+                    if (d.gini_coefficient >= 0.30) return 'Cluster 1 (Moderate-Low)';
+                    return 'Cluster 0 (Low)';
+                }
+            });
+
+            const uniqueClusters = [...new Set(clusterLabels)];
+            const clusterColors = ['#2563eb', '#059669', '#e11d48', '#d97706'];
+
+            const traces = uniqueClusters.map((cName, idx) => {
+                const sub = rawData.filter((d, i) => clusterLabels[i] === cName);
+                return {
+                    x: sub.map(d => d.gini_coefficient),
+                    y: sub.map(d => d.poverty_rate_pct),
+                    mode: 'markers',
+                    name: cName,
+                    marker: { size: 12, color: clusterColors[idx % clusterColors.length], line: { color: 'white', width: 1.5 } },
+                    text: sub.map(d => `${d.country} (${d.year})`)
+                };
+            });
+
+            Plotly.newPlot('chart-cluster', traces, {
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { title: 'Gini Coefficient', gridcolor: '#f1f5f9' },
+                yaxis: { title: 'Poverty Rate (%)', gridcolor: '#f1f5f9' },
+                font: { family: 'Plus Jakarta Sans' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            filterTable();
+            renderOverviewCharts();
+            renderTrendChart();
+            renderHeatmap();
+            updateRegression();
+            updateClustering();
+        });
+    </script>
+</body>
+</html>

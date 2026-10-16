@@ -1,0 +1,2 @@
+# Ignore heavy requirements on Vercel
+requirements.txt
